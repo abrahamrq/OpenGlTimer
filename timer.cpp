@@ -15,6 +15,7 @@
 // Tamaño inicial de la ventana
 int tenthsOfASecond = 0;
 bool paused = true;
+bool started = false;
 GLsizei winWidth = 600, winHeight = 300;
 void init(void){
   glClearColor(1.0,1.0,1.0,1.0);
@@ -81,6 +82,7 @@ void timePassBy(int value){
   }
 }
 
+///// AQUI TANIA ///////////////////////////////////////////////////////////////
 void displayTime(){
   std::string time_formatted = format(tenthsOfASecond);
   glRasterPos2f(50, 50);
@@ -94,19 +96,25 @@ void keyboardActions(unsigned char theKey, int mouseX, int mouseY)
   switch (theKey){
     case 's':
     case 'S':
-      paused = false;
-      glutTimerFunc(100, timePassBy, 0);
+      if (!started){
+        started = true;
+        paused = false;
+        glutTimerFunc(100, timePassBy, 0);
+      }
       break;
     case 'p':
     case 'P':
-      if (paused){
-        glutTimerFunc(100, timePassBy, 0);
+      if (started){
+        if (paused){
+          glutTimerFunc(100, timePassBy, 0);
+        }
+        paused = !paused;
       }
-      paused = !paused;
       break;
     case 'r':
     case 'R':
       paused = true;
+      started = false;
       tenthsOfASecond = 0;
       glutPostRedisplay();
       break;
