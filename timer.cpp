@@ -9,21 +9,19 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <sstream>
+#include <string>
+#include <iostream>
 // Tamaño inicial de la ventana
-GLsizei winWidth =600, winHeight =600;
+int tenthsOfASecond = 0;
+bool paused = true;
+GLsizei winWidth = 600, winHeight = 300;
 void init(void){
   glClearColor(1.0,1.0,1.0,1.0);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluOrtho2D(-1.0, 1.0, -1.0, 1.0);
+  gluOrtho2D(0.0, 100.0, 0.0, 100.0);
 }
-
-// void randomBackgroundWithViewport(int viewPortX, int viewPortY, int viewPortSize){
-//   glScissor(viewPortX, viewPortY, viewPortSize, viewPortSize);
-//   glEnable(GL_SCISSOR_TEST);
-//   glClearColor(rand() / (RAND_MAX + 1.), rand() / (RAND_MAX + 1.), rand() / (RAND_MAX + 1.), 1.0);
-//   glClear(GL_COLOR_BUFFER_BIT);
-// }
 
 void randomBackground(){
   glClearColor(rand() / (RAND_MAX + 1.), rand() / (RAND_MAX + 1.), rand() / (RAND_MAX + 1.), 1.0);
@@ -34,24 +32,98 @@ void randomGlColor3ub(){
   glColor3ub(rand() % 256, rand() % 256, rand() % 256);
 }
 
-// void displayInstructions(){
-//   glClear(GL_COLOR_BUFFER_BIT);
-//   char name[200] = "Abraham Rodriguez";
-//   char id[200] = "A01195653";
-//   glColor3f(0.0, 0.0, 0.0);
-//   glRasterPos2f(-4.7, 2.0);
-//   for(int k = 0; name[k] != '\0'; k++){
-//       glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, name[k]);
-//   }
-//   glRasterPos2f(-3.0, -2.0);
-//   for(int k = 0; id[k] != '\0'; k++){
-//       glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, id[k]);
-//   }
-// }
+std::string format(int tenthsOfASecond){ 
+  std::ostringstream buffer;
+  int seconds = tenthsOfASecond / 10;
+  int tenths = tenthsOfASecond % 10;
+  int minutes = seconds / 60;
+  seconds %= 60;
+  buffer << minutes;
+  buffer << ':';
+  if (seconds < 10){
+    buffer << '0';
+  }
+  buffer << seconds;
+  buffer << ':';
+  buffer << tenths;
+  return buffer.str();
+}
+
+void displayInstructions(){
+  char start[10] = "S-Start";
+  char pause[10] = "P-Pause";
+  char reset[10] = "R-Reset";
+  char esc[10] = "Esc-Exit";
+  randomGlColor3ub();
+  glRasterPos2f(20, 20);
+  for(int k = 0; start[k] != '\0'; k++){
+      glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, start[k]);
+  }
+  glRasterPos2f(45, 20);
+  for(int k = 0; pause[k] != '\0'; k++){
+      glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, pause[k]);
+  }
+  glRasterPos2f(70, 20);
+  for(int k = 0; reset[k] != '\0'; k++){
+      glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, reset[k]);
+  }
+  glRasterPos2f(85, 5);
+  for(int k = 0; esc[k] != '\0'; k++){
+      glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, esc[k]);
+  }
+}
+
+void timePassBy(int value){
+  glutPostRedisplay();
+  tenthsOfASecond++;
+  if (!paused){
+    glutTimerFunc(100, timePassBy, 0);
+  }
+}
+
+void displayTime(){
+  std::string time_formatted = format(tenthsOfASecond);
+  glRasterPos2f(50, 50);
+  for (int i = 0; i < time_formatted.size(); i++){
+    glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, time_formatted[i]);
+  }
+}
+
+void keyboardActions(unsigned char theKey, int mouseX, int mouseY)
+{
+  switch (theKey){
+    case 's':
+    case 'S':
+      paused = false;
+      glutTimerFunc(100, timePassBy, 0);
+      break;
+    case 'p':
+    case 'P':
+      if (paused){
+        glutTimerFunc(100, timePassBy, 0);
+      }
+      paused = !paused;
+      break;
+    case 'r':
+    case 'R':
+      paused = true;
+      tenthsOfASecond = 0;
+      glutPostRedisplay();
+      break;
+    case 27:
+      exit(0);
+      break;
+    default:
+      break;// do nothing
+  }
+}
 
 void timer(void){
   glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
-  randomBackground();
+  glClearColor(0.0, 0.0, 0.0, 1.0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  displayInstructions();
+  displayTime();
   glFlush();
 }
 
@@ -63,6 +135,7 @@ int main(int argc, char** argv){
   glutCreateWindow("Timer");
   init();
   glutDisplayFunc(timer);
+  glutKeyboardFunc(keyboardActions);
   glutMainLoop();
   return 0;
 }
