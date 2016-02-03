@@ -90,9 +90,17 @@ void displayTime(){
     std::string time_formatted = format(tenthsOfASecond);
     glRasterPos2f(45, 50);
     
+    glPushMatrix();
+    glTranslatef(15, 50,1);
+    glScalef(0.2f,0.2f,1);
     for (int i = 0; i < time_formatted.size(); i++){
-        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, time_formatted[i]);
+        glutStrokeCharacter(GLUT_STROKE_ROMAN , time_formatted[i]);
+        
+        // glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, time_formatted[i]);
     }
+    
+    glPopMatrix();
+    
     
 }
 
